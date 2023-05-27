@@ -1,9 +1,8 @@
-module github.com/dop251/goja_nodejs
+module github.com/nuvolaris/goja_nodejs
 
 go 1.16
 
 require (
-	github.com/dop251/goja v0.0.0-20230626124041-ba8a63e79201
-	golang.org/x/net v0.10.0
-	golang.org/x/text v0.9.0
+	github.com/nuvolaris/goja v0.0.0-20230527133949-2939724446aa
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 )

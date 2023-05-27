@@ -4,8 +4,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/require"
+	"github.com/nuvolaris/goja"
+	"github.com/nuvolaris/goja_nodejs/require"
 )
 
 const ModuleName = "process"

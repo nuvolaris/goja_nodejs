@@ -1,8 +1,16 @@
 package url
 
 import (
-	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/require"
+	"math"
+	"net/url"
+	"reflect"
+	"strconv"
+	"strings"
+
+	"golang.org/x/net/idna"
+
+	"github.com/nuvolaris/goja"
+	"github.com/nuvolaris/goja_nodejs/require"
 )
 
 const ModuleName = "url"
