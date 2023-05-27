@@ -10,6 +10,74 @@ import (
 	"github.com/nuvolaris/goja_nodejs/require"
 )
 
+func TestProcessArgvStructure(t *testing.T) {
+	vm := goja.New()
+
+	new(require.Registry).Enable(vm)
+	Enable(vm)
+
+	if c := vm.Get("process"); c == nil {
+		t.Fatal("process not found")
+	}
+
+	if c, err := vm.RunString("process.argv"); c == nil || err != nil {
+		t.Fatal("error accessing process.argv")
+	}
+
+	if c, err := vm.RunString("process.argv.length"); c == nil || err != nil {
+		t.Fatal("error accessing process.argv.length")
+	}
+}
+
+func TestProcessArgvValues(t *testing.T) {
+	vm := goja.New()
+
+	new(require.Registry).Enable(vm)
+	Enable(vm)
+
+	if c, err := vm.RunString("process.argv[0]"); c == nil || err != nil {
+		t.Fatal("error accessing process.argv[0]")
+	}
+
+	if c, err := vm.RunString("process.argv[1]"); c == nil || err != nil {
+		t.Fatal("error accessing process.argv[1]")
+	}
+
+	if c, err := vm.RunString("process.argv[2]"); c == nil || err != nil {
+		t.Fatal("error accessing process.argv[2]")
+	}
+}
+
+func TestProcessArgvValuesArtificial(t *testing.T) {
+	vm := goja.New()
+
+	new(require.Registry).Enable(vm)
+	Enable(vm)
+
+	jsRes, err := vm.RunString("process.argv[0]")
+	if err != nil {
+		t.Fatal(fmt.Sprintf("Error executing: %s", err))
+	}
+
+	if strings.Contains(jsRes.String(), "process.test") == false {
+		t.Fatal(fmt.Sprintf("Error executing: got %s but expected %s", jsRes, "goja"))
+	}
+
+	jsRes, err = vm.RunString("process.argv[1]")
+	if err != nil {
+		t.Fatal(fmt.Sprintf("Error executing: %s", err))
+	}
+
+	if strings.Contains(jsRes.String(), "-test") == false {
+		t.Fatal(fmt.Sprintf("Error executing: got %s but expected %s", jsRes, "test"))
+	}
+
+	jsRes, err = vm.RunString("process.argv[2]")
+	if err != nil {
+		t.Fatal(fmt.Sprintf("Error executing: %s", err))
+	}
+}
+
 func TestProcessEnvStructure(t *testing.T) {
 	vm := goja.New()
 
