@@ -1,8 +1,6 @@
 package console
 
 import (
-	"log"
-
 	"github.com/nuvolaris/goja"
 	"github.com/nuvolaris/goja_nodejs/require"
 	"github.com/nuvolaris/goja_nodejs/util"
