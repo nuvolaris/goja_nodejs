@@ -18,7 +18,7 @@ type Scanner interface {
 	readDir(string) []string                         // read a folder and return an array of filenames
 	toYaml(map[string]interface{}) (string, error)   // encode js object into a yaml string
 	fromYaml(string) (map[string]interface{}, error) // decode a string assuming it is yaml in a js object
-	scan(string, func(goja.FunctionCall) goja.Value) // walks the substree starting in root, execute a function for each folder
+	scan(string, func(string) string) string         // walks the substree starting in root, execute a function for each folder
 }
 
 func Require(runtime *goja.Runtime, module *goja.Object) {
@@ -138,7 +138,15 @@ func (nuv *Nuv) scanJSFunc() func(goja.FunctionCall) goja.Value {
 		if !ok {
 			panic(nuv.runtime.NewTypeError("scan() requires a function as second argument"))
 		}
-		nuv.scanner.scan(arg1, arg2)
-		return nil
+
+		f := func(path string) string {
+			return arg2(goja.FunctionCall{
+				This:      nuv.runtime.ToValue(nil),
+				Arguments: []goja.Value{nuv.runtime.ToValue(path)},
+			}).String()
+		}
+
+		output := nuv.scanner.scan(arg1, f)
+		return nuv.runtime.ToValue(output)
 	}
 }

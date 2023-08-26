@@ -1,7 +1,6 @@
 package nuv
 
 import (
-	_ "embed"
 	"os"
 	"testing"
 
@@ -59,10 +58,12 @@ func TestNuv(t *testing.T) {
 		t.Fatal("wrong nuv.fromYaml() output, want '3', got", objRes)
 	}
 
-	if _, err := vm.RunString("nuv.scan('testdata', (folder) => 'found ' + folder)"); err != nil {
+	scanRes, err := vm.RunString("nuv.scan('testdata', (folder) => folder + ' ')")
+	if err != nil {
 		t.Fatal("nuv.scan() error", err)
 	}
-}
 
-//go:embed testdata/nuv_test.js
-var nuvTest string
+	if scanRes.Export().(string) != "testdata testdata/subfolder " {
+		t.Fatal("wrong nuv.scan() output, want 'testdata testdata/subfolder ', got", scanRes)
+	}
+}

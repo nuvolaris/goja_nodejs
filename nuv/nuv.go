@@ -2,8 +2,9 @@ package nuv
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/nuvolaris/goja"
 	"gopkg.in/yaml.v3"
 )
 
@@ -58,6 +59,20 @@ func (*StdScanner) fromYaml(yamlStr string) (map[string]interface{}, error) {
 }
 
 // scan implements Scanner.
-func (*StdScanner) scan(root string, f func(goja.FunctionCall) goja.Value) {
-	panic("unimplemented")
+func (*StdScanner) scan(root string, f func(string) string) string {
+	strBuilder := strings.Builder{}
+	filepath.WalkDir(
+		root,
+		func(path string, d os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				strBuilder.WriteString(f(path))
+			}
+			return nil
+		},
+	)
+
+	return strBuilder.String()
 }
