@@ -18,8 +18,18 @@ type StdScanner struct {
 }
 
 // readDir implements Scanner.
-func (*StdScanner) readDir(string) []string {
-	panic("unimplemented")
+func (*StdScanner) readDir(path string) ([]string, error) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var filenames []string
+	for _, entry := range entries {
+		filenames = append(filenames, entry.Name())
+	}
+
+	return filenames, nil
 }
 
 // readFile implements Scanner.

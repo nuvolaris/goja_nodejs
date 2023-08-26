@@ -15,7 +15,7 @@ type Nuv struct {
 type Scanner interface {
 	readFile(string) (string, error)                 //read an entire file
 	writeFile(string, string) error                  // write an entire file
-	readDir(string) []string                         // read a folder and return an array of filenames
+	readDir(string) ([]string, error)                // read a folder and return an array of filenames
 	toYaml(map[string]interface{}) (string, error)   // encode js object into a yaml string
 	fromYaml(string) (map[string]interface{}, error) // decode a string assuming it is yaml in a js object
 	scan(string, func(string) string) string         // walks the substree starting in root, execute a function for each folder
@@ -89,7 +89,10 @@ func (nuv *Nuv) readDirJSFunc() func(goja.FunctionCall) goja.Value {
 			panic(nuv.runtime.NewTypeError("readDir() requires one argument"))
 		}
 		arg := call.Argument(0).String()
-		output := nuv.scanner.readDir(arg)
+		output, err := nuv.scanner.readDir(arg)
+		if err != nil {
+			panic(err)
+		}
 		return nuv.runtime.ToValue(output)
 	}
 }
