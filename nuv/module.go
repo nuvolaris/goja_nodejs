@@ -13,12 +13,17 @@ type Nuv struct {
 }
 
 type Scanner interface {
+	exists(string) bool                              // returns true if the path exists
 	readFile(string) (string, error)                 //read an entire file
 	writeFile(string, string) error                  // write an entire file
 	readDir(string) ([]string, error)                // read a folder and return an array of filenames
 	toYaml(map[string]interface{}) (string, error)   // encode js object into a yaml string
 	fromYaml(string) (map[string]interface{}, error) // decode a string assuming it is yaml in a js object
 	scan(string, func(string) string) string         // walks the substree starting in root, execute a function for each folder
+	basePath(string) string                          // returns the base path of the scanner
+	fileExt(string) string                           // returns the file extension of the scanner
+	isDir(string) bool                               // returns true if the path is a directory
+	joinPath(string, string) string                  // joins two paths
 }
 
 func Require(runtime *goja.Runtime, module *goja.Object) {
@@ -43,6 +48,11 @@ func requireWithScanner(scanner Scanner) require.ModuleLoader {
 		o.Set("scan", nuv.scanJSFunc())
 		o.Set("toYaml", nuv.toYamlJSFunc(nuv.runtime))
 		o.Set("fromYaml", nuv.fromYamlJSFunc())
+		o.Set("basePath", nuv.basePathJSFunc())
+		o.Set("fileExt", nuv.fileExtJSFunc())
+		o.Set("isDir", nuv.isDirJSFunc())
+		o.Set("joinPath", nuv.joinPathJSFunc())
+		o.Set("exists", nuv.existsJSFunc())
 	}
 }
 
@@ -150,6 +160,62 @@ func (nuv *Nuv) scanJSFunc() func(goja.FunctionCall) goja.Value {
 		}
 
 		output := nuv.scanner.scan(arg1, f)
+		return nuv.runtime.ToValue(output)
+	}
+}
+
+func (nuv *Nuv) basePathJSFunc() func(goja.FunctionCall) goja.Value {
+	return func(call goja.FunctionCall) goja.Value {
+		if len(call.Arguments) != 1 {
+			panic(nuv.runtime.NewTypeError("basePath() requires one argument"))
+		}
+		arg1 := call.Argument(0).String()
+		output := nuv.scanner.basePath(arg1)
+		return nuv.runtime.ToValue(output)
+	}
+}
+
+func (nuv *Nuv) fileExtJSFunc() func(goja.FunctionCall) goja.Value {
+	return func(call goja.FunctionCall) goja.Value {
+		if len(call.Arguments) != 1 {
+			panic(nuv.runtime.NewTypeError("fileExt() requires one argument"))
+		}
+		arg1 := call.Argument(0).String()
+		output := nuv.scanner.fileExt(arg1)
+		return nuv.runtime.ToValue(output)
+	}
+}
+
+func (nuv *Nuv) isDirJSFunc() func(goja.FunctionCall) goja.Value {
+	return func(call goja.FunctionCall) goja.Value {
+		if len(call.Arguments) != 1 {
+			panic(nuv.runtime.NewTypeError("isDir() requires one argument"))
+		}
+		arg1 := call.Argument(0).String()
+		output := nuv.scanner.isDir(arg1)
+		return nuv.runtime.ToValue(output)
+	}
+}
+
+func (nuv *Nuv) joinPathJSFunc() func(goja.FunctionCall) goja.Value {
+	return func(call goja.FunctionCall) goja.Value {
+		if len(call.Arguments) != 2 {
+			panic(nuv.runtime.NewTypeError("joinPath() requires two arguments"))
+		}
+		arg1 := call.Argument(0).String()
+		arg2 := call.Argument(1).String()
+		output := nuv.scanner.joinPath(arg1, arg2)
+		return nuv.runtime.ToValue(output)
+	}
+}
+
+func (nuv *Nuv) existsJSFunc() func(goja.FunctionCall) goja.Value {
+	return func(call goja.FunctionCall) goja.Value {
+		if len(call.Arguments) != 1 {
+			panic(nuv.runtime.NewTypeError("exists() requires one argument"))
+		}
+		arg1 := call.Argument(0).String()
+		output := nuv.scanner.exists(arg1)
 		return nuv.runtime.ToValue(output)
 	}
 }

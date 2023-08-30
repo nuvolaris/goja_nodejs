@@ -17,76 +17,158 @@ func TestNuv(t *testing.T) {
 	new(require.Registry).Enable(vm)
 	Enable(vm)
 
-	if n := vm.Get("nuv"); n == nil {
-		t.Fatal("nuv not found")
-	}
+	t.Run("readFile", func(t *testing.T) {
+		content, err := vm.RunString("nuv.readFile('testdata/sample.txt')")
+		if err != nil {
+			t.Fatal("nuv.readFile error", err)
+		}
+		if content.Export().(string) != "a sample text file" {
+			t.Fatal("wrong nuv.readFile output, want 'a sample text file', got", content)
+		}
+	})
 
-	content, err := vm.RunString("nuv.readFile('testdata/sample.txt')")
-	if err != nil {
-		t.Fatal("nuv.readFile error", err)
-	}
-	if content.Export().(string) != "a sample text file" {
-		t.Fatal("wrong nuv.readFile output, want 'a sample text file', got", content)
-	}
+	t.Run("writeFile", func(t *testing.T) {
+		if _, err := vm.RunString("nuv.writeFile('testdata/written.txt', 'sample from js')"); err != nil {
+			t.Fatal("nuv.writeFile error", err)
+		}
 
-	if _, err := vm.RunString("nuv.writeFile('testdata/written.txt', 'sample from js')"); err != nil {
-		t.Fatal("nuv.writeFile error", err)
-	}
+		// check that testdata/written.txt exists
+		writtenContent, err := vm.RunString("nuv.readFile('testdata/written.txt')")
+		if err != nil {
+			t.Fatal("nuv.readFile error after writeFile", err)
+		}
+		if writtenContent.Export().(string) != "sample from js" {
+			t.Fatal("wrong nuv.readFile output after writeFile, want 'sample from js', got", writtenContent)
+		}
 
-	// check that testdata/written.txt exists
-	writtenContent, err := vm.RunString("nuv.readFile('testdata/written.txt')")
-	if err != nil {
-		t.Fatal("nuv.readFile error after writeFile", err)
-	}
-	if writtenContent.Export().(string) != "sample from js" {
-		t.Fatal("wrong nuv.readFile output after writeFile, want 'sample from js', got", writtenContent)
-	}
-	// remove testdata/written.txt with go
-	_ = os.Remove("testdata/written.txt")
+		// remove testdata/written.txt with go
+		_ = os.Remove("testdata/written.txt")
+	})
 
-	result, err := vm.RunString("nuv.toYaml({ version: 3 })")
-	if err != nil {
-		t.Fatal("nuv.toYaml() error", err)
-	}
-	if result.Export().(string) != "version: 3\n" {
-		t.Fatal("wrong nuv.toYaml() output, want 'version: 3\n', got", result)
-	}
+	t.Run("toYaml", func(t *testing.T) {
+		result, err := vm.RunString("nuv.toYaml({ version: 3 })")
+		if err != nil {
+			t.Fatal("nuv.toYaml() error", err)
+		}
+		if result.Export().(string) != "version: 3\n" {
+			t.Fatal("wrong nuv.toYaml() output, want 'version: 3\n', got", result)
+		}
+	})
 
-	objRes, err := vm.RunString("nuv.fromYaml('version: 3')")
-	if err != nil {
-		t.Fatal("nuv.fromYaml() error", err)
-	}
+	t.Run("fromYaml", func(t *testing.T) {
+		objRes, err := vm.RunString("nuv.fromYaml('version: 3')")
+		if err != nil {
+			t.Fatal("nuv.fromYaml() error", err)
+		}
 
-	if objRes.Export().(map[string]interface{})["version"].(int) != 3 {
-		t.Fatal("wrong nuv.fromYaml() output, want '3', got", objRes)
-	}
+		if objRes.Export().(map[string]interface{})["version"].(int) != 3 {
+			t.Fatal("wrong nuv.fromYaml() output, want '3', got", objRes)
+		}
+	})
 
-	scanRes, err := vm.RunString("nuv.scan('testdata', (folder) => folder + ' ')")
-	if err != nil {
-		t.Fatal("nuv.scan() error", err)
-	}
+	t.Run("scan", func(t *testing.T) {
+		scanRes, err := vm.RunString("nuv.scan('testdata', (folder) => folder + ' ')")
+		if err != nil {
+			t.Fatal("nuv.scan() error", err)
+		}
 
-	if scanRes.Export().(string) != "testdata testdata/subfolder " {
-		t.Fatal("wrong nuv.scan() output, want 'testdata testdata/subfolder ', got", scanRes)
-	}
+		if scanRes.Export().(string) != "testdata testdata/subfolder " {
+			t.Fatal("wrong nuv.scan() output, want 'testdata testdata/subfolder ', got", scanRes)
+		}
+	})
 
-	readDirRes, err := vm.RunString("nuv.readDir('testdata')")
-	if err != nil {
-		t.Fatal("nuv.readDir() error", err)
-	}
+	t.Run("readDir", func(t *testing.T) {
+		readDirRes, err := vm.RunString("nuv.readDir('testdata')")
+		if err != nil {
+			t.Fatal("nuv.readDir() error", err)
+		}
 
-	want := []string{"nuv_test.js", "sample.txt", "subfolder"}
-	got := readDirRes.Export().([]string)
+		want := []string{"nuv_test.js", "sample.txt", "subfolder"}
+		got := readDirRes.Export().([]string)
 
-	if len(got) != len(want) {
-		t.Fatal("wrong nuv.readDir() output, want", want, "got", got)
-	}
-
-	for i, v := range want {
-		if v != got[i] {
+		if len(got) != len(want) {
 			t.Fatal("wrong nuv.readDir() output, want", want, "got", got)
 		}
-	}
+
+		for i, v := range want {
+			if v != got[i] {
+				t.Fatal("wrong nuv.readDir() output, want", want, "got", got)
+			}
+		}
+	})
+
+	t.Run("basePath", func(t *testing.T) {
+		basePatRes, err := vm.RunString("nuv.basePath('testdata/test/sample')")
+		if err != nil {
+			t.Fatal("nuv.basePath() error", err)
+		}
+
+		if basePatRes.Export().(string) != "sample" {
+			t.Fatal("wrong nuv.basePath() output, want 'sample', got", basePatRes)
+		}
+	})
+
+	t.Run("fileExt", func(t *testing.T) {
+		fileExtRes, err := vm.RunString("nuv.fileExt('testdata/test/sample.txt')")
+		if err != nil {
+			t.Fatal("nuv.fileExt() error", err)
+		}
+
+		if fileExtRes.Export().(string) != ".txt" {
+			t.Fatal("wrong nuv.fileExt() output, want '.txt', got", fileExtRes)
+		}
+	})
+
+	t.Run("isDir", func(t *testing.T) {
+		isDirRes, err := vm.RunString("nuv.isDir('testdata/test/sample.txt')")
+		if err != nil {
+			t.Fatal("nuv.isDir() error", err)
+		}
+
+		if isDirRes.Export().(bool) != false {
+			t.Fatal("wrong nuv.isDir() output, want 'false', got", isDirRes)
+		}
+
+		isDirRes, err = vm.RunString("nuv.isDir('testdata')")
+		if err != nil {
+			t.Fatal("nuv.isDir() error", err)
+		}
+
+		if isDirRes.Export().(bool) != true {
+			t.Fatal("wrong nuv.isDir() output, want 'true', got", isDirRes)
+		}
+	})
+
+	t.Run("joinPath", func(t *testing.T) {
+		joinPathRes, err := vm.RunString("nuv.joinPath('testdata', 'test/sample.txt')")
+		if err != nil {
+			t.Fatal("nuv.joinPath() error", err)
+		}
+
+		if joinPathRes.Export().(string) != "testdata/test/sample.txt" {
+			t.Fatal("wrong nuv.joinPath() output, want 'testdata/test/sample.txt', got", joinPathRes)
+		}
+	})
+
+	t.Run("exists", func(t *testing.T) {
+		existsRes, err := vm.RunString("nuv.exists('testdata/sample.txt')")
+		if err != nil {
+			t.Fatal("nuv.exists() error", err)
+		}
+
+		if existsRes.Export().(bool) != true {
+			t.Fatal("wrong nuv.exists() output, want 'true', got", existsRes)
+		}
+
+		existsRes, err = vm.RunString("nuv.exists('testdata/sample2.txt')")
+		if err != nil {
+			t.Fatal("nuv.exists() error", err)
+		}
+
+		if existsRes.Export().(bool) != false {
+			t.Fatal("wrong nuv.exists() output, want 'false', got", existsRes)
+		}
+	})
 }
 
 //go:embed testdata/nuv_test.js

@@ -86,3 +86,28 @@ func (*StdScanner) scan(root string, f func(string) string) string {
 
 	return strBuilder.String()
 }
+
+func (*StdScanner) basePath(path string) string {
+	return filepath.Base(path)
+}
+
+func (*StdScanner) fileExt(path string) string {
+	return filepath.Ext(path)
+}
+
+func (*StdScanner) isDir(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+func (*StdScanner) joinPath(path1 string, path2 string) string {
+	return filepath.Join(path1, path2)
+}
+
+func (*StdScanner) exists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
