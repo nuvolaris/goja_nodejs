@@ -2,6 +2,7 @@ package nuv
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -110,4 +111,12 @@ func (*StdScanner) joinPath(path1 string, path2 string) string {
 func (*StdScanner) exists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+func (*StdScanner) nuvExec(cmd string, args ...string) string {
+	cmd = strings.TrimPrefix(cmd, "nuv ")
+	fullCmd := append([]string{cmd}, args...)
+	shCmd := exec.Command("nuv", fullCmd...)
+	out, _ := shCmd.CombinedOutput()
+	return string(out)
 }

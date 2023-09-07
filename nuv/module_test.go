@@ -169,6 +169,16 @@ func TestNuv(t *testing.T) {
 			t.Fatal("wrong nuv.exists() output, want 'false', got", existsRes)
 		}
 	})
+
+	t.Run("nuvExec", func(t *testing.T) {
+		oldNuvVersion := os.Getenv("NUV_VERSION")
+		os.Setenv("NUV_VERSION", "3")
+		_, err := vm.RunString("nuv.nuvExec('nuv -v')")
+		os.Setenv("NUV_VERSION", oldNuvVersion)
+		if err != nil {
+			t.Fatal("nuv.nuvExec() error", err)
+		}
+	})
 }
 
 //go:embed testdata/nuv_test.js

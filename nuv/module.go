@@ -24,6 +24,7 @@ type Scanner interface {
 	fileExt(string) string                           // returns the file extension of the scanner
 	isDir(string) bool                               // returns true if the path is a directory
 	joinPath(string, string) string                  // joins two paths
+	nuvExec(string, ...string) string                // executes a nuv command
 }
 
 func Require(runtime *goja.Runtime, module *goja.Object) {
@@ -53,6 +54,7 @@ func requireWithScanner(scanner Scanner) require.ModuleLoader {
 		o.Set("isDir", nuv.isDirJSFunc())
 		o.Set("joinPath", nuv.joinPathJSFunc())
 		o.Set("exists", nuv.existsJSFunc())
+		o.Set("nuvExec", nuv.nuvExecJSFunc())
 	}
 }
 
@@ -216,6 +218,21 @@ func (nuv *Nuv) existsJSFunc() func(goja.FunctionCall) goja.Value {
 		}
 		arg1 := call.Argument(0).String()
 		output := nuv.scanner.exists(arg1)
+		return nuv.runtime.ToValue(output)
+	}
+}
+
+func (nuv *Nuv) nuvExecJSFunc() func(goja.FunctionCall) goja.Value {
+	return func(call goja.FunctionCall) goja.Value {
+		arg1 := call.Argument(0).String()
+		arg2 := call.Arguments[1:]
+
+		stringArgs := make([]string, len(arg2))
+		for i, arg := range arg2 {
+			stringArgs[i] = arg.String()
+		}
+
+		output := nuv.scanner.nuvExec(arg1, stringArgs...)
 		return nuv.runtime.ToValue(output)
 	}
 }
