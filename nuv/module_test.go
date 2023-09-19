@@ -170,7 +170,7 @@ func TestNuv(t *testing.T) {
 		}
 	})
 
-	t.Run("nuvExec", func(t *testing.T) {
+	t.Run("nuvExec with nuv", func(t *testing.T) {
 		oldNuvVersion := os.Getenv("NUV_VERSION")
 		os.Setenv("NUV_VERSION", "3")
 		_, err := vm.RunString("nuv.nuvExec('nuv -v')")
@@ -179,6 +179,14 @@ func TestNuv(t *testing.T) {
 			t.Fatal("nuv.nuvExec() error", err)
 		}
 	})
+
+	t.Run("nuvExec with other cmd (curl)", func(t *testing.T) {
+		_, err := vm.RunString("nuv.nuvExec('curl -V')")
+		if err != nil {
+			t.Fatal("nuv.nuvExec() error", err)
+		}
+	})
+
 }
 
 //go:embed testdata/nuv_test.js

@@ -114,9 +114,7 @@ func (*StdScanner) exists(path string) bool {
 }
 
 func (*StdScanner) nuvExec(cmd string, args ...string) string {
-	cmd = strings.TrimPrefix(cmd, "nuv ")
-	fullCmd := append([]string{cmd}, args...)
-	shCmd := exec.Command("nuv", fullCmd...)
+	shCmd := exec.Command(cmd, args...)
 	out, _ := shCmd.CombinedOutput()
 	return string(out)
 }
