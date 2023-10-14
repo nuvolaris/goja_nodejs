@@ -7,7 +7,7 @@ import (
 
 var (
 	stderrLogger = log.Default() // the default logger output to stderr
-	stdoutLogger = log.New(os.Stdout, "", log.LstdFlags)
+	stdoutLogger = log.New(os.Stdout, "", 0)
 
 	defaultStdPrinter Printer = &StdPrinter{
 		StdoutPrint: func(s string) { stdoutLogger.Print(s) },
