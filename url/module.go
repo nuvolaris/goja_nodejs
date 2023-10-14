@@ -1,14 +1,6 @@
 package url
 
 import (
-	"math"
-	"net/url"
-	"reflect"
-	"strconv"
-	"strings"
-
-	"golang.org/x/net/idna"
-
 	"github.com/nuvolaris/goja"
 	"github.com/nuvolaris/goja_nodejs/require"
 )
